@@ -126,7 +126,7 @@ for k=1:lt
 end
 
 % --- Setup noise ---
-noise_level = 0.05;                 % Noise level 1% (0.01)
+noise_level = 0.01;                 % Noise level 1% (0.01)
 noise_update_interval = 1;          % Each 1 second is updated the noise
 rng(0);                            % Set the seed for reproducibility
 noise_val = 1;                      % Initial value for noise
@@ -173,7 +173,7 @@ end
 ss_idx = round(0.8*lt):lt-1;
 
 % Steady-state variance of HPR under noise
-HPR_var = var(HPR_meas(ss_idx));
+HPR_var = var(HPR(ss_idx));
 
 % RMS tracking error
 HPR_rms_error = sqrt(mean((HPR_meas(ss_idx) - HPR_ref(ss_idx)).^2));
@@ -194,6 +194,17 @@ fprintf('RMS tracking error: %.4f\n', HPR_rms_error);
 fprintf('Time to convergence: %.2f days\n', t_conv);
 
 
+Qin_opt = 4.82;   % ejemplo
+Qin_dev = mean(abs(Qin(ss_idx) - Qin_opt));
+
+%Qin_var  = var(Qin(ss_idx));
+Qin_mean = mean(Qin(ss_idx));
+
+fprintf('Variance of Qin: %.4f\n', Qin_dev);
+
+%Qin_var_rel = Qin_var / Qin_var(1);
+
+
 
 %% Plot results
 figure;
@@ -209,7 +220,7 @@ figure;
 plot(t, Qin_ref, '--r', 'LineWidth',2)
 hold on
 plot(t,Qin,'LineWidth',2)
-legend('Optimal','Q_{in}','Location','SouthEast')
+legend('Optimum','Q_{in}','Location','SouthEast')
 ylabel('Qin [L/d]', 'FontSize', 14, 'FontWeight', 'bold')
 xlabel('Time [d]', 'FontSize', 14, 'FontWeight', 'bold', 'Interpreter','tex')
 set(gca, 'FontSize', 14, 'LineWidth', 1.5);
@@ -220,7 +231,8 @@ figure;
 plot(t, HPR_ref, '--r', 'LineWidth',2)
 hold on
 plot(t(1:end-1), HPR(1:end-1),'LineWidth',2)
-legend('Optimal','H_2 Production Rate','Location','SouthEast','FontSize',12)
+%plot(t, HPR,'LineWidth',2)
+legend('Maximum HPR','H_2 Production Rate','Location','SouthEast','FontSize',12)
 ylabel('HPR [g[H_2]/Ld]', 'FontSize', 14, 'FontWeight', 'bold', 'Interpreter','tex')
 xlabel('Time [d]', 'FontSize', 14, 'FontWeight', 'bold')
 set(gca, 'FontSize', 14, 'LineWidth', 1.5);
@@ -238,7 +250,7 @@ box on;
 figure;
 % plot(t(1:end-1),HPR(1:end-1),'LineWidth',2)
 % hold on
-plot(t(1:end-1),HPR_meas(1:end-1),'--','LineWidth',2)
+plot(t,HPR_meas,'--','LineWidth',2)
 hold on
 plot(t,HPR_ref,'k:','LineWidth',2)
 %legend('True HPR','Measured HPR (1% noise)','Optimal','Location','SouthEast')

@@ -214,7 +214,7 @@ for k=1:lt-1
     
     if t(k)>=tic
         HPR_interpolated_2(k+1) = y3; 
-        fprintf('\n Interpolated HPR=%f, Inflow=%f, Gradient=%f',HPR_interpolated_2(k),Qin_interpolated_2(k-1),gradEst_interpolated_2(k));
+        fprintf('\n Interpolated HPR=%f, Inflow=%f, Gradient=%f\n',HPR_interpolated_2(k),Qin_interpolated_2(k-1),gradEst_interpolated_2(k));
         
         % Gradient approximation
         if t(k)>tic
@@ -372,5 +372,55 @@ ylabel('\partial^2 HPR / \partial Q_{in}^2', 'FontSize', 12, 'FontWeight', 'bold
 title('Local Hessian at optimal Q_{in}')
 grid on
 box on
+
+% Óptimo global real de la superficie
+[HPR_global_opt, idx] = max(HPR_map(:));
+[iGopt, iQopt] = ind2sub(size(HPR_map), idx);
+
+GluIn_opt = GluIn_vec(iGopt);
+Qin_opt   = Qin_vec(iQopt);
+
+% Paso pequeño coherente con la malla
+dQ = Qin_vec(2) - Qin_vec(1);
+
+% Gradiente REAL del modelo entrenado
+HPR_plus  = trainedModel.predictFcn( ...
+    table(GluIn_opt, Qin_opt + dQ, ...
+    'VariableNames', {'GluIn','Qin'}) );
+
+HPR_minus = trainedModel.predictFcn( ...
+    table(GluIn_opt, Qin_opt - dQ, ...
+    'VariableNames', {'GluIn','Qin'}) );
+
+grad_real = (HPR_plus - HPR_minus) / (2*dQ);
+grad_norm = abs(grad_real);
+
+fprintf('||?HPR|| = %.4e\n',grad_norm);
+
+% % Óptimo global real de la superficie
+% [HPR_global_opt, idx] = max(HPR_map(:));
+% [iGopt, iQopt] = ind2sub(size(HPR_map), idx);
+% 
+% GluIn_opt = GluIn_vec(iGopt);
+% Qin_opt   = Qin_vec(iQopt);
+% 
+% % Refinamiento cuadrático local
+% HPR_profile = HPR_map(iGopt,:);
+% Qin_local = Qin_vec(iQopt-1:iQopt+1);
+% HPR_local = HPR_profile(iQopt-1:iQopt+1);
+% 
+% p = polyfit(Qin_local, HPR_local, 2);
+% 
+% Qin_opt_cont = -p(2)/(2*p(1));
+% grad_opt     = 2*p(1)*Qin_opt_cont + p(2);
+% grad_norm    = abs(grad_opt);
+% hess_opt     = 2*p(1);
+% 
+% fprintf('Óptimo global:\n');
+% fprintf('GluIn* = %.2f g/L\n',GluIn_opt);
+% fprintf('Qin*   = %.2f L/d\n',Qin_opt_cont);
+% fprintf('HPR*   = %.4f\n',polyval(p,Qin_opt_cont));
+% fprintf('||?HPR|| = %.4e\n',grad_norm);
+% fprintf('Hessiano = %.3e\n',hess_opt);
 
 

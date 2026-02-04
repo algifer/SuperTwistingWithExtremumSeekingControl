@@ -126,7 +126,7 @@ for k=1:lt
 end
 
 % --- Setup noise ---
-noise_level = 0.0;                 % Noise level 1% (0.01)
+noise_level = 0.05;                 % Noise level 1% (0.01)
 noise_update_interval = 1;          % Each 1 second is updated the noise
 rng(0);                            % Set the seed for reproducibility
 noise_val = 1;                      % Initial value for noise
@@ -167,32 +167,44 @@ for k=1:lt-1
     end
 end
 
-%% Quantitative noise robustness metrics
-
-% Define steady-state window (last 20% of simulation)
-ss_idx = round(0.8*lt):lt-1;
-
-% Steady-state variance of HPR under noise
-HPR_var = var(HPR_meas(ss_idx));
-
-% RMS tracking error
-HPR_rms_error = sqrt(mean((HPR_meas(ss_idx) - HPR_ref(ss_idx)).^2));
-
-% Time to convergence (within 5% of reference)
-tol = 0.05;
-conv_idx = find(abs(HPR_meas - HPR_ref) ./ max(HPR_ref,1e-3) < tol, 1);
-
-if isempty(conv_idx)
-    t_conv = NaN;
-else
-    t_conv = t(conv_idx);
-end
-
-fprintf('\n--- Noise robustness metrics ---\n');
-fprintf('Steady-state variance of HPR: %.4f\n', HPR_var);
-fprintf('RMS tracking error: %.4f\n', HPR_rms_error);
-fprintf('Time to convergence: %.2f days\n', t_conv);
-
+% %% Quantitative noise robustness metrics
+% 
+% % Define steady-state window (last 20% of simulation)
+% ss_idx = round(0.8*lt):lt-1;
+% 
+% % % Steady-state variance of HPR under noise
+% % HPR_var = var(HPR_meas(ss_idx));
+% % 
+% % % RMS tracking error
+% % HPR_rms_error = sqrt(mean((HPR_meas(ss_idx) - HPR_ref(ss_idx)).^2));
+% % 
+% % % Time to convergence (within 5% of reference)
+% % tol = 0.05;
+% % conv_idx = find(abs(HPR_meas - HPR_ref) ./ max(HPR_ref,1e-3) < tol, 1);
+% % 
+% % if isempty(conv_idx)
+% %     t_conv = NaN;
+% % else
+% %     t_conv = t(conv_idx);
+% % end
+% % 
+% % fprintf('\n--- Noise robustness metrics ---\n');
+% % fprintf('Steady-state variance of HPR: %.4f\n', HPR_var);
+% % fprintf('RMS tracking error: %.4f\n', HPR_rms_error);
+% % fprintf('Time to convergence: %.2f days\n', t_conv);
+% 
+% 
+% %% Qin noise rejection analysis
+% 
+% Qin_nominal = mean(Qin(ss_idx))
+% 
+% Qin_var_noise = var(Qin(ss_idx))
+% 
+% Qin_var_rel_pct = 100 * Qin_var_noise / Qin_nominal^2;
+% 
+% fprintf('\n--- Noise rejection w.r.t Qin ---\n');
+% fprintf('Noisy Qin variance: %.4e\n', Qin_var_noise);
+% fprintf('Relative Qin variance: %.2f %%\n', Qin_var_rel_pct);
 
 
 %% Plot results
@@ -246,3 +258,57 @@ legend('Measured HPR (4% noise)','Optimal','Location','SouthEast')
 ylabel('HPR [g H_2/Ld]')
 xlabel('Time [d]')
 grid on; box on;
+
+
+noise_levels = 0:0.1:1.0;   % 0% a 100%
+nNoise = length(noise_levels);
+
+RelVar_Qin = zeros(nNoise,1);
+Qin_mean   = zeros(nNoise,1);
+Qin_var    = zeros(nNoise,1);
+
+for i = 1:nNoise
+
+    noise_level = noise_levels(i);   % <<< AQUÍ SE INYECTA EL RUIDO
+
+    fprintf('\nRunning simulation with noise level = %.0f %%\n', ...
+            100*noise_level);
+
+    % =====================================================
+    % === EJECUTA AQUÍ TU SCRIPT DE SIMULACIÓN ESC ===
+    % =====================================================
+    % El script debe generar:
+    %   Qin  -> señal de control
+    %   t    -> vector de tiempo
+    % =====================================================
+
+    run('MainESC_ST_Differentiator_with_noise_test.m');
+
+    % --- Estado estacionario (último 20%)
+    ss_idx = round(0.8*length(Qin)):length(Qin);
+
+    Qin_ss = Qin(ss_idx);
+
+    Qin_mean(i) = mean(Qin_ss);
+    Qin_var(i)  = var(Qin_ss);
+
+    % --- Relative variance (%)
+    RelVar_Qin(i) = 100 * Qin_var(i) / (Qin_mean(i)^2);
+
+end
+
+Noise_pct = 100 * noise_levels(:);
+
+QinNoiseTable = table( ...
+    Noise_pct, ...
+    Qin_mean, ...
+    Qin_var, ...
+    RelVar_Qin, ...
+    'VariableNames', { ...
+        'NoiseLevel_percent', ...
+        'Mean_Qin', ...
+        'Variance_Qin', ...
+        'Relative_Qin_Variance_percent' ...
+    });
+
+disp(QinNoiseTable)

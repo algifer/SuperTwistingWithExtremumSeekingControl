@@ -48,11 +48,29 @@ end
 
 figure;
 surf(GluIn_Open_Loop,Qin_Open_Loop,Hpr_fit_Open_Loop)
-ylabel('Q_{in} (L/d)');
-xlabel('Glu_{in} (g/L)');
-zlabel('HPR (g[H_{2}]/Ld)');
+ylabel('Q_{in} (L/d)','LineWidth',2);
+xlabel('Glu_{in} (g/L)','LineWidth',2);
+zlabel('HPR (g[H_{2}]/Ld)','LineWidth',2);
 %title('HPR Response Surface')
 colorbar
+
+% figure;
+% surf(GluIn_Open_Loop,Qin_Open_Loop,Hpr_fit_Open_Loop)
+% ylabel('u','LineWidth',2);
+% xlabel('w','LineWidth',2);
+% zlabel('y','LineWidth',2);
+% %title('HPR Response Surface')
+% colorbar
+
+% figure;
+% surf(GluIn_Open_Loop, Qin_Open_Loop, Hpr_fit_Open_Loop)
+% 
+% xlabel('w','FontSize',14,'FontWeight','bold');
+% ylabel('u','FontSize',14,'FontWeight','bold');
+% zlabel('y','FontSize',14,'FontWeight','bold');
+% 
+% set(gca,'FontSize',12,'LineWidth',1.5)   % ticks más gruesos
+% colorbar
 
 %% Productivity in open Loop
 Hpr_open_loop = zeros(1,lt);

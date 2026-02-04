@@ -166,7 +166,7 @@ figure;
 plot(t, Qin_ref, '--r', 'LineWidth',2)
 hold on
 plot(t,Qin,'LineWidth',2)
-legend('Optimal','Q_{in}','Location','SouthEast')
+legend('Optimum','Q_{in}','Location','SouthEast')
 ylabel('Qin [L/d]', 'FontSize', 14, 'FontWeight', 'bold')
 xlabel('Time [d]', 'FontSize', 14, 'FontWeight', 'bold', 'Interpreter','tex')
 set(gca, 'FontSize', 14, 'LineWidth', 1.5);
@@ -177,7 +177,7 @@ figure;
 plot(t, HPR_ref, '--r', 'LineWidth',2)
 hold on
 plot(t(1:end-1), HPR(1:end-1),'LineWidth',2)
-legend('Optimal','H_2 Production Rate','Location','SouthEast','FontSize',12)
+legend('Maximum HPR','H_2 Production Rate','Location','SouthEast','FontSize',12)
 ylabel('HPR [g[H_2]/Ld]', 'FontSize', 14, 'FontWeight', 'bold', 'Interpreter','tex')
 xlabel('Time [d]', 'FontSize', 14, 'FontWeight', 'bold')
 set(gca, 'FontSize', 14, 'LineWidth', 1.5);

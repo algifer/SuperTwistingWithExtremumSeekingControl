@@ -214,7 +214,7 @@ for k=1:lt-1
     
     if t(k)>=tic
         HPR_interpolated_2(k+1) = y3; 
-        fprintf('\n Interpolated HPR=%f, Inflow=%f, Gradient=%f',HPR_interpolated_2(k),Qin_interpolated_2(k-1),gradEst_interpolated_2(k));
+        fprintf('\n Interpolated HPR=%f, Inflow=%f, Gradient=%f\n',HPR_interpolated_2(k),Qin_interpolated_2(k-1),gradEst_interpolated_2(k));
         
         % Gradient approximation
         if t(k)>tic
@@ -355,14 +355,6 @@ end
 %% Figures requested by the reviewer
 %% ============================================================
 
-% --- GluIn vs Hessian
-figure;
-plot(GluIn_vec, hess_Q_opt, 'LineWidth', 2)
-xlabel('Glu_{In} (g/L)', 'FontSize', 12, 'FontWeight', 'bold')
-ylabel('\partial^2 HPR / \partial Q_{in}^2', 'FontSize', 12, 'FontWeight', 'bold')
-title('Local Hessian at optimal Q_{in}')
-grid on
-box on
 
 % --- GluIn vs Gradient
 figure;
@@ -373,11 +365,36 @@ title('Gradient at optimal Q_{in}')
 grid on
 box on
 
-% --- GluIn vs RMSE (optional but very strong)
+% --- GluIn vs Hessian
 figure;
-plot(GluIn_vec, rmse_quad, 'LineWidth', 2)
+plot(GluIn_vec, hess_Q_opt, 'LineWidth', 2)
 xlabel('Glu_{In} (g/L)', 'FontSize', 12, 'FontWeight', 'bold')
-ylabel('RMSE (quadratic fit)', 'FontSize', 12, 'FontWeight', 'bold')
-title('Local quadratic approximation error')
+ylabel('\partial^2 HPR / \partial Q_{in}^2', 'FontSize', 12, 'FontWeight', 'bold')
+title('Local Hessian at optimal Q_{in}')
 grid on
 box on
+
+
+% Óptimo global real de la superficie
+[HPR_global_opt, idx] = max(HPR_map(:));
+[iGopt, iQopt] = ind2sub(size(HPR_map), idx);
+
+GluIn_opt = GluIn_vec(iGopt);
+Qin_opt   = Qin_vec(iQopt);
+
+% Paso pequeño coherente con la malla
+dQ = Qin_vec(2) - Qin_vec(1);
+
+% Gradiente REAL del modelo entrenado
+HPR_plus  = trainedModel.predictFcn( ...
+    table(GluIn_opt, Qin_opt + dQ, ...
+    'VariableNames', {'GluIn','Qin'}) );
+
+HPR_minus = trainedModel.predictFcn( ...
+    table(GluIn_opt, Qin_opt - dQ, ...
+    'VariableNames', {'GluIn','Qin'}) );
+
+grad_real = (HPR_plus - HPR_minus) / (2*dQ);
+grad_norm = abs(grad_real);
+
+fprintf('||?HPR|| = %.4e\n',grad_norm);

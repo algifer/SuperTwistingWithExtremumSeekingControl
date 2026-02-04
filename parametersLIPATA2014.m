@@ -111,6 +111,7 @@ KGlu = [KGlu1 KGlu2];
 al      = 1; 
 be      = 4;
 ga      = 10;
+ga_ST   = ga;
 
 p       = 0.35;
 q       = 0.2;
